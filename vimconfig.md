@@ -1,3 +1,5 @@
+> shell配置文件
+
 ```shell
 set nocompatible " 关闭 vi 兼容模式
 syntax on " 自动语法高亮
