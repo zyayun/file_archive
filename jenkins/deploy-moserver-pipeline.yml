@@ -1,0 +1,9 @@
+---
+- hosts: all
+  remote_user: root
+  tasks:
+    - name: copy toml template file
+      copy: src={{ workspace }}/services dest=/root/deploy/moservice-manager/
+    - name: start {{ prd_name }} or stop {{ prd_name }}
+      shell: cd /root/deploy/moservice-manager &&  ./manage.py -c {{ setting_file }} -s {{ prd_name }} -a {{ action }}
+

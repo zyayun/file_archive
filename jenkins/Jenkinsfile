@@ -1,0 +1,50 @@
+pipeline{
+	agent any
+	//构建参数
+	parameters {
+		//配置文件参数
+		text(name: 'setting_file',defaultValue: 'setting.toml',description: '指定配置文件')
+		choice (
+			name: 'prd_name',
+			choices: ['asr-finance', 'mrcp-server', 'nginx-service'],
+			description: '指定部署的产品名称'
+			)
+		//服务开关
+		choice(
+			name: 'action', 
+			choices: ['run', 'stop', 'restart'],
+			description: '开启或停止部署服务'
+			)
+		//部署server ipaddress
+		text(name: 'server_ip', defaultValue: '1.1.1.1', description: '指定你要部署的远程主机 server_ip   ANSIBLE INVENTORY')
+		//ansible-playbook模板
+		text(name: 'playbook', defaultValue: 'deploy-moserver-pipeline.yml', description: 'ansible-playbook template')
+
+	}
+	//步骤
+	stages {
+		stage ('print parameters'){
+			steps{
+				sh '''
+				echo "[INFO] setting_file $setting_file"
+				echo "[INFO] prd_name $prd_name"
+				echo "[INFO] action $action"
+				echo "[INFO] server_ip $server_ip"
+				'''
+			}
+		}
+		stage ('pull template file'){
+			steps{
+				git branch: 'dev0.1', url: 'git@gitlab.mobvoi.com:infrastructure/pt-deploy-config.git'
+			}
+		}
+		stage ('deploy-moserver'){ 
+			steps{
+				sh '''
+				export workspace=`pwd`
+				ansible-playbook -i $server_ip, $playbook -e "workspace="$workspace" prd_name="$prd_name" setting_file="$setting_file" action="$action""
+				'''
+			}
+		}
+	}
+}
