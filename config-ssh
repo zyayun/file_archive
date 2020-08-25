@@ -1,0 +1,9 @@
+#指定不同用户登录远程主机
+Host kingcloud
+   HostName 120.92.xx.xx
+   User ubuntu
+   IdentityFile ~/.ssh/id_rsa
+Host ali-1m
+   HostName 47.89.xx.xxx
+   User root
+   IdentityFile ~/.ssh/id_rsa
