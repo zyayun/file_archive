@@ -1,0 +1,46 @@
+---
+#initialzation machine
+#Auth: yayun.zhang@mobvoi.com
+- hosts: all
+  remote_user: root
+  vars:
+    #python3 environment
+    #ansible_python_interpreter: /usr/bin/python3
+  tasks:
+    - name: add docker repo
+      get_url:
+        url: https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+      when: ansible_distribution_major_version == "7"
+    - name: install base software
+      yum:
+        #name="{{ item }}" state=installed
+       name: ['redis','python3','python3-pip','python3-setuptools','docker-ce-19.03.9-3.el7','git']
+       state: installed
+# feature remove of ansible v2.11
+#      with_items:
+#        - redis
+#        - python3
+#        - python3-pip
+#        - python3-setuptools
+      when:
+        - ansible_distribution_major_version == "7"
+    - name: enable services
+      service: name="{{item}}" state=started enabled=yes
+      with_items:
+        - redis
+        - docker
+    - name: get moservice
+      git:
+        repo: "git@gitlab.mobvoi.com:infrastructure/moservice-manager.git"
+        #custom install directory
+        dest: "{{ prd_dir }}"
+        accept_hostkey: yes
+        force: yes
+    - name: install python dependent
+      shell: pip3 install toml requests redis
+      when:
+        - ansible_distribution_major_version == "7"
+      #启动服务单独写个playbook,这块只做试
+    - name: start moservice service
+      shell: cd {{ prd_dir }} && python3 manage.py -c setting.toml -s nginx-service -a run
